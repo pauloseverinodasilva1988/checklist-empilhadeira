@@ -1,1 +1,592 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checklist de Inspeção de Empilhadeira</title>
+    <style>
+        /* Seu CSS existente para o layout */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #5a2e2e; /* Cor de fundo similar à imagem */
+            color: #fff;
+            padding: 20px;
+        }
+        .container {
+            background-color: #8b4545; /* Cor de fundo do checklist */
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input[type="date"],
+        .form-group input[type="time"],
+        .form-group input[type="text"],
+        .form-group select,
+        .form-group textarea {
+            width: calc(100% - 16px); /* 100% menos padding */
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background-color: #f0f0f0;
+            color: #333; /* Cor do texto dentro dos inputs/selects */
+        }
+        /* Estilo para os contêineres de checklist de cada tipo de empilhadeira */
+        .checklist-type-container {
+            border: 1px solid #a05252;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .checklist-type-container h3 {
+            margin-top: 0;
+            color: #fff;
+        }
+        .checklist-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #a05252;
+        }
+        .checklist-item:last-child {
+            border-bottom: none;
+        }
+        .checklist-item label {
+            flex: 1;
+            padding-right: 10px;
+            font-weight: normal;
+        }
+        .checklist-item select {
+            width: auto;
+            min-width: 120px;
+            color: #333;
+        }
+        .hidden {
+            display: none; /* Classe para esconder os elementos */
+        }
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 5px;
+        }
+        .radio-group input[type="radio"] {
+            margin-right: 5px;
+        }
+        .submit-button, .export-button, .report-button { /* Adicionado .report-button */
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            text-decoration: none; /* Para links, como o botão de relatório */
+            display: inline-block; /* Para que os botões fiquem lado a lado se couberem */
+            margin-right: 10px; /* Espaçamento entre os botões */
+        }
+        .submit-button:hover, .export-button:hover, .report-button:hover {
+            background-color: #45a049;
+        }
+        .export-button {
+            background-color: #008CBA;
+        }
+        .export-button:hover {
+            background-color: #007bb5;
+        }
+        /* Estilo específico para o novo botão de relatório */
+        .report-button {
+            background-color: #28a745; /* Uma cor verde diferente para destacar */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            /* Removido display: block e width: fit-content para alinhar com os outros */
+        }
+        .report-button:hover {
+            background-color: #218838;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        /* Para centralizar os botões abaixo do formulário */
+        .button-container {
+            text-align: center;
+            margin-top: 30px;
+            padding-bottom: 20px; /* Espaço na parte inferior do container */
+        }
+    </style>
+</head>
+<body>
+<body>
+    <div class="container">
+        <h1>Checklist das Empilhadeiras</h1>
+        </div>
+</body>
+    <div class="container">
+        <form action="processa_checklist.php" method="POST">
+            <div class="form-group">
+                <label for="data">Data:</label>
+                <input type="date" id="data" name="data" value="<?php echo date('Y-m-d'); ?>" required>
+            </div>
+            <div class="form-group">
+                <label for="hora">Hora:</label>
+                <input type="time" id="hora" name="hora" value="<?php echo date('H:i'); ?>" required>
+            </div>
+            <div class="form-group">
+                <label for="nome">Nome do Operador:</label>
+                <input type="text" id="nome" name="nome" required>
+            </div>
+            <div class="form-group">
+                <label for="empilhadeira_tipo">Tipo de Empilhadeira:</label>
+                <select id="empilhadeira_tipo" name="empilhadeira_tipo" onchange="displayChecklist()" required>
+                    <option value="">Selecione...</option>
+                    <option value="aGas">A Gás</option>
+                    <option value="eletrica">Elétrica</option>
+                    <option value="paleteira">Paleteira</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="turno">Turno:</label>
+                <select id="turno" name="turno" required>
+                    <option value="">Selecione...</option>
+                    <option value="manha">Manhã</option>
+                    <option value="tarde">Tarde</option>
+                    <option value="noite">Noite</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="operacao">Operação:</label>
+                <input type="text" id="operacao" name="operacao" placeholder="Ex: Carga e Descarga" required>
+            </div>
 
+            <div id="checklist_aGas" class="checklist-type-container hidden">
+                <h3 class="section-title">Checklist para Empilhadeira A GÁS:</h3>
+                <div class="checklist-item">
+                    <label for="item_Pedais_gas">Pedais:</label>
+                    <select id="item_Pedais_gas" name="aGas_item_Pedais"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Bateria_gas">Bateria:</label>
+                    <select id="item_Bateria_gas" name="aGas_item_Bateria"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Direcao_gas">Direção:</label>
+                    <select id="item_Direcao_gas" name="aGas_item_Direcao"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Buzina_gas">Buzina:</label>
+                    <select id="item_Buzina_gas" name="aGas_item_Buzina"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Retrovisores_gas">Retrovisores:</label>
+                    <select id="item_Retrovisores_gas" name="aGas_item_Retrovisores"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Pneus_gas">Pneus:</label>
+                    <select id="item_Pneus_gas" name="aGas_item_Pneus"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Assento_gas">Assento:</label>
+                    <select id="item_Assento_gas" name="aGas_item_Assento"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Cabine_gas">Cabine:</label>
+                    <select id="item_Cabine_gas" name="aGas_item_Cabine"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Protetor_de_carga_gas">Protetor de carga:</label>
+                    <select id="item_Protetor_de_carga_gas" name="aGas_item_Protetor_de_carga"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Freio_de_estacionamento_gas">Freio de estacionamento:</label>
+                    <select id="item_Freio_de_estacionamento_gas" name="aGas_item_Freio_de_estacionamento"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Painel_de_instrumentacao_gas">Painel de instrumentação:</label>
+                    <select id="item_Painel_de_instrumentacao_gas" name="aGas_item_Painel_de_instrumentacao"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Farois_gas">Faróis:</label>
+                    <select id="item_Farois_gas" name="aGas_item_Farois"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Sinal_sonoro_gas">Sinal sonoro:</label>
+                    <select id="item_Sinal_sonoro_gas" name="aGas_item_Sinal_Sonoro"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Alavanca_de_comandos_gas">Alavanca de comandos:</label>
+                    <select id="item_Alavanca_de_comandos_gas" name="aGas_item_Alavanca_de_comandos"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Garfos_gas">Garfo:</label>
+                    <select id="item_Garfos_gas" name="aGas_item_Garfos"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Corrente_gas">Corrente:</label>
+                    <select id="item_Corrente_gas" name="aGas_item_Corrente"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Fardil_gas">Fardil:</label>
+                    <select id="item_Fardil_gas" name="aGas_item_Fardil"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="checklist_eletrica" class="checklist-type-container hidden">
+                <h3 class="section-title">Checklist para Empilhadeira ELÉTRICA:</h3>
+                <div class="checklist-item">
+                    <label for="item_Pedais_eletrica">Pedais:</label>
+                    <select id="item_Pedais_eletrica" name="eletrica_item_Pedais"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Bateria_eletrica">Bateria:</label>
+                    <select id="item_Bateria_eletrica" name="eletrica_item_Bateria"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Direcao_eletrica">Direção:</label>
+                    <select id="item_Direcao_eletrica" name="eletrica_item_Direcao"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Buzina_eletrica">Buzina:</label>
+                    <select id="item_Buzina_eletrica" name="eletrica_item_Buzina"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Retrovisores_eletrica">Retrovisores:</label>
+                    <select id="item_Retrovisores_eletrica" name="eletrica_item_Retrovisores"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Pneus_eletrica">Pneus:</label>
+                    <select id="item_Pneus_eletrica" name="eletrica_item_Pneus"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Assento_eletrica">Assento:</label>
+                    <select id="item_Assento_eletrica" name="eletrica_item_Assento"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Cabine_eletrica">Cabine:</label>
+                    <select id="item_Cabine_eletrica" name="eletrica_item_Cabine"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Protetor_de_carga_eletrica">Protetor de carga:</label>
+                    <select id="item_Protetor_de_carga_eletrica" name="eletrica_item_Protetor_de_carga"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Freio_de_estacionamento_eletrica">Freio de estacionamento:</label>
+                    <select id="item_Freio_de_estacionamento_eletrica" name="eletrica_item_Freio_de_estacionamento"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Painel_de_instrumentacao_eletrica">Painel de instrumentação:</label>
+                    <select id="item_Painel_de_instrumentacao_eletrica" name="eletrica_item_Painel_de_instrumentacao"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Farois_eletrica">Faróis:</label>
+                    <select id="item_Farois_eletrica" name="eletrica_item_Farois"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Sinal_sonoro_eletrica">Sinal sonoro:</label>
+                    <select id="item_Sinal_sonoro_eletrica" name="eletrica_item_Sinal_Sonoro"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Alavanca_de_comandos_eletrica">Alavanca de comandos:</label>
+                    <select id="item_Alavanca_de_comandos_eletrica" name="eletrica_item_Alavanca_de_comandos"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Garfos_eletrica">Garfo:</label>
+                    <select id="item_Garfos_eletrica" name="eletrica_item_Garfos"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Corrente_eletrica">Corrente:</label>
+                    <select id="item_Corrente_eletrica" name="eletrica_item_Corrente"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="checklist_paleteira" class="checklist-type-container hidden">
+                <h3 class="section-title">Checklist para Paleteira (de Plataforma):</h3>
+                <div class="checklist-item">
+                    <label for="item_Pedais_paleteira">Pedais:</label>
+                    <select id="item_Pedais_paleteira" name="paleteira_item_Pedais"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Bateria_paleteira">Bateria:</label>
+                    <select id="item_Bateria_paleteira" name="paleteira_item_Bateria"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Direcao_paleteira">Direção:</label>
+                    <select id="item_Direcao_paleteira" name="paleteira_item_Direcao"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Buzina_paleteira">Buzina:</label>
+                    <select id="item_Buzina_paleteira" name="paleteira_item_Buzina"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Pneus_paleteira">Pneus/Rodas:</label>
+                    <select id="item_Pneus_paleteira" name="paleteira_item_Pneus"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Freio_de_estacionamento_paleteira">Freio de estacionamento:</label>
+                    <select id="item_Freio_de_estacionamento_paleteira" name="paleteira_item_Freio_de_estacionamento"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Painel_de_instrumentacao_paleteira">Painel de instrumentação:</label>
+                    <select id="item_Painel_de_instrumentacao_paleteira" name="paleteira_item_Painel_de_instrumentacao"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Farois_paleteira">Faróis:</label>
+                    <select id="item_Farois_paleteira" name="paleteira_item_Farois"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Sinal_sonoro_paleteira">Sinal sonoro:</label>
+                    <select id="item_Sinal_sonoro_paleteira" name="paleteira_item_Sinal_Sonoro"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Alavanca_de_comandos_paleteira">Alavanca de comandos:</label>
+                    <select id="item_Alavanca_de_comandos_paleteira" name="paleteira_item_Alavanca_de_comandos"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Garfos_paleteira">Garfo:</label>
+                    <select id="item_Garfos_paleteira" name="paleteira_item_Garfos"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Corrente_paleteira">Corrente:</label>
+                    <select id="item_Corrente_paleteira" name="paleteira_item_Corrente"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+                <div class="checklist-item">
+                    <label for="item_Plataforma_do_Operador_paleteira">Plataforma do Operador:</label>
+                    <select id="item_Plataforma_do_Operador_paleteira" name="paleteira_item_Plataforma_do_Operador"> <option value="Conforme">Conforme</option>
+                        <option value="Nao Conforme">Não Conforme</option>
+                        <option value="Nao Aplicavel">Não Aplicável</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 20px;">
+                <label class="section-title">Alguma não conformidade?</label>
+                <div class="radio-group">
+                    <input type="radio" id="naoConformidadeSim" name="nao_conformidade" value="Sim" onchange="toggleNaoConformidadeInfo()">
+                    <label for="naoConformidadeSim">Sim</label>
+                    <input type="radio" id="naoConformidadeNao" name="nao_conformidade" value="Não" checked onchange="toggleNaoConformidadeInfo()">
+                    <label for="naoConformidadeNao">Não</label>
+                </div>
+            </div>
+
+            <div class="form-group hidden" id="naoConformidadeInfoGroup">
+                <label for="nao_conformidade_info">Detalhes da Não Conformidade:</label>
+                <textarea id="nao_conformidade_info" name="nao_conformidade_info" rows="3" placeholder="Descreva a não conformidade encontrada."></textarea>
+            </div>
+
+            <button type="submit" class="submit-button">Salvar Checklist</button>
+        </form>
+
+        <div class="button-container">
+            <form action="processa_checklist.php" method="POST" style="display: inline-block;">
+                <input type="hidden" name="exportar" value="true">
+                <button type="submit" class="export-button">Exportar CSV</button>
+            </form>
+
+            <a href="relatorio_empilhadeira.php" target="_blank" class="report-button">Ver Relatórios Completos</a>
+        </div>
+
+    </div>
+
+    <script>
+        // Função para exibir o checklist correto
+        function displayChecklist() {
+            const selectedType = document.getElementById('empilhadeira_tipo').value;
+            const allChecklistContainers = document.querySelectorAll('.checklist-type-container');
+
+            allChecklistContainers.forEach(container => {
+                container.classList.add('hidden'); // Esconde todos os contêineres de checklist
+
+                // Para cada item dentro de um contêiner escondido, defina o valor como 'Nao Aplicavel'
+                const selectsInHiddenContainer = container.querySelectorAll('select');
+                selectsInHiddenContainer.forEach(select => {
+                    select.value = 'Nao Aplicavel';
+                });
+            });
+
+            // Exibe o contêiner do checklist correspondente ao tipo selecionado
+            if (selectedType !== '') {
+                const targetContainer = document.getElementById('checklist_' + selectedType);
+                if (targetContainer) {
+                    targetContainer.classList.remove('hidden');
+                    // Opcional: Garanta que os selects dentro do contêiner visível voltem para "Conforme"
+                    // ou o valor padrão, caso o usuário alterne entre os tipos.
+                    const selectsInVisibleContainer = targetContainer.querySelectorAll('select');
+                    selectsInVisibleContainer.forEach(select => {
+                        // Se o valor atual for "Nao Aplicavel", volte para "Conforme"
+                        if (select.value === 'Nao Aplicavel') {
+                            select.value = 'Conforme';
+                        }
+                    });
+                }
+            }
+        }
+
+        // Lógica para mostrar/esconder o campo de detalhes da não conformidade
+        function toggleNaoConformidadeInfo() {
+            const naoConformidadeSim = document.getElementById('naoConformidadeSim');
+            const naoConformidadeInfoGroup = document.getElementById('naoConformidadeInfoGroup');
+            const naoConformidadeInfo = document.getElementById('nao_conformidade_info');
+
+            if (naoConformidadeSim.checked) {
+                naoConformidadeInfoGroup.classList.remove('hidden');
+                naoConformidadeInfo.setAttribute('required', 'required');
+            } else {
+                naoConformidadeInfoGroup.classList.add('hidden');
+                naoConformidadeInfo.removeAttribute('required');
+                naoConformidadeInfo.value = '';
+            }
+        }
+
+        // Chamar as funções uma vez ao carregar a página para garantir o estado inicial
+        document.addEventListener('DOMContentLoaded', () => {
+            displayChecklist(); // Inicializa o checklist (escondido ou o selecionado se houver)
+            toggleNaoConformidadeInfo(); // Inicializa o campo de detalhes da não conformidade
+        });
+    </script>
+</body>
+</html>
